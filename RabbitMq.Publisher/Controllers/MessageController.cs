@@ -11,8 +11,6 @@ namespace RabbitMq.Publisher.Controllers
     [ApiController]
     public class MessageController : ControllerBase
     {
-        private const string HOST_NAME = "localhost";
-        private const string QUEUE_NAME = "message_queue";
 
         private static List<Message> Messages = new List<Message>();
 
@@ -25,11 +23,11 @@ namespace RabbitMq.Publisher.Controllers
         [HttpPost]
         public async Task<IActionResult> PostMessage([FromBody] Message message)
         {
-            var factory = new ConnectionFactory() { HostName = HOST_NAME };
+            var factory = new ConnectionFactory() { HostName = "localhost" };
             using var connection = await factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
 
-            await channel.QueueDeclareAsync(queue: QUEUE_NAME,
+            await channel.QueueDeclareAsync(queue: "message_queue",
                                      durable: false,
                                      exclusive: false,
                                      autoDelete: false,
@@ -39,7 +37,7 @@ namespace RabbitMq.Publisher.Controllers
 
             await channel.BasicPublishAsync(
                                  exchange: string.Empty,
-                                 routingKey: QUEUE_NAME,
+                                 routingKey: "message_queue",
                                  mandatory: false,
                                  body: body,
                                  cancellationToken: default);
