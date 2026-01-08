@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RabbitMq.Publisher.Model;
+using RabbitMQ.Client;
+using System.Threading;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -9,19 +11,42 @@ namespace RabbitMq.Publisher.Controllers
     [ApiController]
     public class MessageController : ControllerBase
     {
-        public static List<Message> Messages = [];
+        private const string HOST_NAME = "localhost";
+        private const string QUEUE_NAME = "message_queue";
+
+        private static List<Message> Messages = new List<Message>();
 
         [HttpGet]
-        public IEnumerable<Message> GetMessage()
+        public async Task<IEnumerable<Message>> GetMessage()
         {
             return Messages;
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] Message message)
+        public async Task<IActionResult> PostMessage([FromBody] Message message)
         {
+            var factory = new ConnectionFactory() { HostName = HOST_NAME };
+            using var connection = await factory.CreateConnectionAsync();
+            using var channel = await connection.CreateChannelAsync();
+
+            await channel.QueueDeclareAsync(queue: QUEUE_NAME,
+                                     durable: false,
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
+
+            var body = System.Text.Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(message));
+
+            await channel.BasicPublishAsync(
+                                 exchange: string.Empty,
+                                 routingKey: QUEUE_NAME,
+                                 mandatory: false,
+                                 body: body,
+                                 cancellationToken: default);
+
+
             Messages.Add(message);
-            return Accepted(message);
+            return Accepted(new { status = "Mensagem enviada", message });
         }
     }
 }
