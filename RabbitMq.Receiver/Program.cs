@@ -6,12 +6,25 @@ var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 using var channel = await connection.CreateChannelAsync();
 
-await channel.QueueDeclareAsync(
-    queue: "message_queue", 
-    durable: false, 
-    exclusive: false, 
-    autoDelete: false,
+await channel.ExchangeDeclareAsync(
+    exchange: "fanout_exchange",
+    type: ExchangeType.Fanout);
+
+QueueDeclareOk queueDeclareResult = await channel.QueueDeclareAsync();
+string queueName = queueDeclareResult.QueueName;
+
+await channel.QueueBindAsync(
+    queue: queueName,
+    exchange: "fanout_exchange",
+    routingKey: string.Empty,
     arguments: null);
+
+//await channel.QueueDeclareAsync(
+//    queue: "message_queue", 
+//    durable: false, 
+//    exclusive: false, 
+//    autoDelete: false,
+//    arguments: null);
 
 var consumer = new AsyncEventingBasicConsumer(channel);
 consumer.ReceivedAsync += (model, ea) =>
@@ -24,6 +37,6 @@ consumer.ReceivedAsync += (model, ea) =>
     return Task.CompletedTask;
 };
 
-await channel.BasicConsumeAsync("message_queue", autoAck: true, consumer: consumer);
+await channel.BasicConsumeAsync(queueName, autoAck: true, consumer: consumer);
 
 await Task.Delay(Timeout.Infinite);

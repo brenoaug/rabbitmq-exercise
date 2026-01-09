@@ -23,24 +23,40 @@ namespace RabbitMq.Publisher.Controllers
         [HttpPost]
         public async Task<IActionResult> PostMessage([FromBody] Message message)
         {
+
             var factory = new ConnectionFactory() { HostName = "localhost" };
             using var connection = await factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
 
-            await channel.QueueDeclareAsync(queue: "message_queue",
-                                     durable: false,
-                                     exclusive: false,
-                                     autoDelete: false,
-                                     arguments: null);
+            //declara uma queue com nome aleatório
+            QueueDeclareOk queueDeclareResult = await channel.QueueDeclareAsync();
+            string queueName = queueDeclareResult.QueueName;
+
+            await channel.ExchangeDeclareAsync(
+                exchange: "fanout_exchange",
+                type: ExchangeType.Fanout);
+
+            await channel.QueueBindAsync(
+                queue: queueName,
+                exchange: "fanout_exchange",
+                routingKey: string.Empty,
+                arguments: null);
+
+//            await channel.QueueDeclareAsync(
+//                queue: queueName,                    
+//                durable: false,
+//                exclusive: false,
+//                autoDelete: false,
+//                arguments: null);
 
             var body = System.Text.Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(message));
 
             await channel.BasicPublishAsync(
-                                 exchange: string.Empty,
-                                 routingKey: "message_queue",
-                                 mandatory: false,
-                                 body: body,
-                                 cancellationToken: default);
+                 exchange: "fanout_exchange",
+                 routingKey: string.Empty,
+                 mandatory: false,
+                 body: body,
+                 cancellationToken: default);
 
 
             Messages.Add(message);
