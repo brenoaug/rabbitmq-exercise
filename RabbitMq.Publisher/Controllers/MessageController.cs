@@ -28,32 +28,34 @@ namespace RabbitMq.Publisher.Controllers
             using var connection = await factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
 
-            //declara uma queue com nome aleatório
-            QueueDeclareOk queueDeclareResult = await channel.QueueDeclareAsync();
-            string queueName = queueDeclareResult.QueueName;
 
+            // 1. Declara o exchange
             await channel.ExchangeDeclareAsync(
-                exchange: "fanout_exchange",
-                type: ExchangeType.Fanout);
+                exchange: "direct_exchange",
+                type: ExchangeType.Direct);
 
-            await channel.QueueBindAsync(
-                queue: queueName,
-                exchange: "fanout_exchange",
-                routingKey: string.Empty,
+
+            // 2. Declara a fila ANTES de fazer bind
+            await channel.QueueDeclareAsync(
+                queue: "queue0",
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
                 arguments: null);
 
-//            await channel.QueueDeclareAsync(
-//                queue: queueName,                    
-//                durable: false,
-//                exclusive: false,
-//                autoDelete: false,
-//                arguments: null);
+            // 3. Faz bind da fila ao exchange
+            await channel.QueueBindAsync(
+                queue: "queue0",
+                exchange: "direct_exchange",    
+                routingKey: "route0");
 
             var body = System.Text.Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(message));
 
+
+            // 4. Publica no exchange com routing key
             await channel.BasicPublishAsync(
-                 exchange: "fanout_exchange",
-                 routingKey: string.Empty,
+                 exchange: "direct_exchange",
+                 routingKey: "route0",
                  mandatory: false,
                  body: body,
                  cancellationToken: default);

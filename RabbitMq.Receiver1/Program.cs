@@ -15,33 +15,33 @@ await channel.ExchangeDeclareAsync(
 
 // 2. Declara a fila nomeada "queue"
 await channel.QueueDeclareAsync(
-    queue: "queue0",
+    queue: "queue1",
     durable: false,
     exclusive: false,
     autoDelete: false);
 
 // 3. Faz bind da fila ao exchange com routing key "route1"
 await channel.QueueBindAsync(
-    queue: "queue0",
+    queue: "queue1",
     exchange: "direct_exchange",
-    routingKey: "route0");
+    routingKey: "route1");
 
-Console.WriteLine("Fila 'queue0' vinculada ao exchange 'direct_exchange' com routing key 'route0'");
+Console.WriteLine("Fila 'queue1' vinculada ao exchange 'direct_exchange' com routing key 'route1'");
 
 var consumer = new AsyncEventingBasicConsumer(channel);
 consumer.ReceivedAsync += async (model, ea) =>
 {
     var body = ea.Body.ToArray();
     var message = Encoding.UTF8.GetString(body);
-    
+
     // Simula processamento sem bloquear thread
     await Task.Delay(5000);
-    
+
     Console.WriteLine($"Mensagem Recebida: {message}");
 };
 
 await channel.BasicConsumeAsync(
-    "queue0", 
+    "queue1", 
     autoAck: true, 
     consumer: consumer);
 
