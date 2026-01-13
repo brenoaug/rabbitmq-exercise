@@ -2,4 +2,5 @@
   <Project Path="RabbitMq.Publisher/RabbitMq.Publisher.csproj" />
   <Project Path="RabbitMq.Receiver/RabbitMq.Receiver.csproj" Id="bf22fd0d-f9c6-4375-9438-039077a8b81d" />
   <Project Path="RabbitMq.Receiver1/RabbitMq.Receiver1.csproj" Id="1084fd37-3c1f-430e-a26f-ba07cf47063d" />
+  <Project Path="RabbitMq.Receiver2/RabbitMq.Receiver2.csproj" Id="ec1c0974-0740-44b3-bf31-fa12cd91dcf2" />
 </Solution>

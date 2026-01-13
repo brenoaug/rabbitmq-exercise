@@ -4,9 +4,9 @@ using System.Text;
 
 Console.OutputEncoding = Encoding.UTF8;
 
-const string QUEUE_NAME = "queue1";
+const string QUEUE_NAME = "queue2";
 const string EXCHANGE_NAME = "topic_exchange";
-const string ROUTING_KEY = "bye.message";
+const string ROUTING_KEY = "*.message";
 
 var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
