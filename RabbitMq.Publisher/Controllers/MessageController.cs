@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RabbitMq.Publisher.Model;
 using RabbitMQ.Client;
-using System.Threading;
+using System.Text;
+using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -33,11 +34,11 @@ namespace RabbitMq.Publisher.Controllers
                                      autoDelete: false,
                                      arguments: null);
 
-            var body = System.Text.Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(message));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
             await channel.BasicPublishAsync(
                                  exchange: string.Empty,
-                                 routingKey: "message_queue",
+                                 routingKey: string.Empty,
                                  mandatory: false,
                                  body: body,
                                  cancellationToken: default);
