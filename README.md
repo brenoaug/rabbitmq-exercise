@@ -1,22 +1,22 @@
 # Sistema de Mensageria com RabbitMQ - Fanout Exchange
 
-## Vis„o Geral
+## Vis√£o Geral
 
-Esta branch (`exchange/fanout`) demonstra a implementaÁ„o de um sistema de mensageria assÌncrona utilizando RabbitMQ com **Fanout Exchange**. Este tipo de exchange implementa o padr„o de broadcasting, onde uma ˙nica mensagem È distribuÌda para **todas as filas vinculadas**, independentemente de routing keys.
+Esta branch (`exchange/fanout`) demonstra a implementa√ß√£o de um sistema de mensageria ass√≠ncrona utilizando RabbitMQ com **Fanout Exchange**. Este tipo de exchange implementa o padr√£o de broadcasting, onde uma √∫nica mensagem √© distribu√≠da para **todas as filas vinculadas**, independentemente de routing keys.
 
-## O que È Fanout Exchange?
+## O que √© Fanout Exchange?
 
-O **Fanout Exchange** È o tipo mais simples de exchange no RabbitMQ. Ele funciona como um broadcast: toda mensagem publicada È copiada e enviada para **todas as filas** que est„o vinculadas (bound) a este exchange, ignorando completamente a routing key.
+O **Fanout Exchange** √© o tipo mais simples de exchange no RabbitMQ. Ele funciona como um broadcast: toda mensagem publicada √© copiada e enviada para **todas as filas** que est√£o vinculadas (bound) a este exchange, ignorando completamente a routing key.
 
-### CaracterÌsticas do Fanout Exchange
+### Caracter√≠sticas do Fanout Exchange
 
-| CaracterÌstica | Comportamento |
+| Caracter√≠stica | Comportamento |
 |----------------|---------------|
 | **Routing Key** | Completamente ignorada - pode ser vazia |
-| **DistribuiÁ„o** | Broadcast para todas as filas vinculadas |
-| **Uso tÌpico** | NotificaÁıes globais, eventos de sistema, cache invalidation |
-| **Performance** | Mais r·pido que outros tipos (n„o precisa analisar routing key) |
-| **Flexibilidade** | Adicionar/remover consumidores n„o afeta o publisher |
+| **Distribui√ß√£o** | Broadcast para todas as filas vinculadas |
+| **Uso t√≠pico** | Notifica√ß√µes globais, eventos de sistema, cache invalidation |
+| **Performance** | Mais r√°pido que outros tipos (n√£o precisa analisar routing key) |
+| **Flexibilidade** | Adicionar/remover consumidores n√£o afeta o publisher |
 
 ## Arquitetura do Sistema
 
@@ -32,9 +32,9 @@ graph TB
     
     subgraph "RabbitMQ Broker"
         FE[fanout_exchange<br/>Type: Fanout]
-        Q1[Fila AnÙnima 1<br/>amq.gen-xxx]
-        Q2[Fila AnÙnima 2<br/>amq.gen-yyy]
-        Q3[Fila AnÙnima N<br/>amq.gen-zzz]
+        Q1[Fila An√¥nima 1<br/>amq.gen-xxx]
+        Q2[Fila An√¥nima 2<br/>amq.gen-yyy]
+        Q3[Fila An√¥nima N<br/>amq.gen-zzz]
     end
     
     subgraph "Consumers"
@@ -67,19 +67,19 @@ rabbitmq-exercise/ (branch: exchange/fanout)
 ?   ?   ??? MessageController.cs  # Publica no fanout_exchange
 ?   ??? Model/
 ?   ?   ??? Message.cs            # Modelo da mensagem
-?   ??? Program.cs                # ConfiguraÁ„o da API
+?   ??? Program.cs                # Configura√ß√£o da API
 ?
 ??? RabbitMq.Receiver/
-    ??? Program.cs                # Consumer com fila anÙnima
+    ??? Program.cs                # Consumer com fila an√¥nima
 ```
 
-## ImplementaÁ„o Detalhada
+## Implementa√ß√£o Detalhada
 
 ### Publisher (MessageController.cs)
 
-O Publisher È respons·vel por enviar mensagens para o Fanout Exchange.
+O Publisher √© respons√°vel por enviar mensagens para o Fanout Exchange.
 
-#### Passo 1: Declarar Fila AnÙnima
+#### Passo 1: Declarar Fila An√¥nima
 
 ```csharp
 // Cria uma fila com nome gerado automaticamente pelo RabbitMQ
@@ -88,11 +88,11 @@ string queueName = queueDeclareResult.QueueName;
 // Exemplo de nome gerado: amq.gen-JzTY20BRgKO-HjmUJj0wLg
 ```
 
-**Por que fila anÙnima?**
+**Por que fila an√¥nima?**
 - Nome gerado automaticamente pelo RabbitMQ (prefixo `amq.gen-`)
-- Exclusiva para esta conex„o
-- Deletada automaticamente quando a conex„o fecha
-- Ideal para consumers tempor·rios ou m˙ltiplos consumers independentes
+- Exclusiva para esta conex√£o
+- Deletada automaticamente quando a conex√£o fecha
+- Ideal para consumers tempor√°rios ou m√∫ltiplos consumers independentes
 
 #### Passo 2: Declarar o Exchange
 
@@ -102,7 +102,7 @@ await channel.ExchangeDeclareAsync(
     type: ExchangeType.Fanout);
 ```
 
-| Par‚metro | Valor | Significado |
+| Par√¢metro | Valor | Significado |
 |-----------|-------|-------------|
 | **exchange** | "fanout_exchange" | Nome identificador do exchange |
 | **type** | ExchangeType.Fanout | Tipo de roteamento (broadcast) |
@@ -118,9 +118,9 @@ await channel.QueueBindAsync(
 ```
 
 **Binding no Fanout:**
-- Cria vÌnculo entre a fila e o exchange
-- `routingKey` pode ser vazia - ser· ignorada
-- Toda mensagem publicada no exchange ser· copiada para esta fila
+- Cria v√≠nculo entre a fila e o exchange
+- `routingKey` pode ser vazia - ser√° ignorada
+- Toda mensagem publicada no exchange ser√° copiada para esta fila
 
 #### Passo 4: Publicar Mensagem
 
@@ -128,7 +128,7 @@ await channel.QueueBindAsync(
 var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
 await channel.BasicPublishAsync(
-    exchange: "fanout_exchange",  // Publica no exchange, n„o diretamente na fila
+    exchange: "fanout_exchange",  // Publica no exchange, n√£o diretamente na fila
     routingKey: string.Empty,     // Ignorada no Fanout
     mandatory: false,
     body: body,
@@ -137,7 +137,7 @@ await channel.BasicPublishAsync(
 
 ### Receiver (Program.cs)
 
-O Receiver se conecta ao exchange e consome mensagens de uma fila anÙnima.
+O Receiver se conecta ao exchange e consome mensagens de uma fila an√¥nima.
 
 #### Passo 1: Declarar o Exchange
 
@@ -147,19 +147,19 @@ await channel.ExchangeDeclareAsync(
     type: ExchangeType.Fanout);
 ```
 
-**Importante:** O exchange deve ser declarado tanto no Publisher quanto no Receiver. Se j· existir, a declaraÁ„o È idempotente (n„o causa erro).
+**Importante:** O exchange deve ser declarado tanto no Publisher quanto no Receiver. Se j√° existir, a declara√ß√£o √© idempotente (n√£o causa erro).
 
-#### Passo 2: Criar Fila AnÙnima
+#### Passo 2: Criar Fila An√¥nima
 
 ```csharp
 QueueDeclareOk queueDeclareResult = await channel.QueueDeclareAsync();
 string queueName = queueDeclareResult.QueueName;
 ```
 
-**Cada Receiver tem sua prÛpria fila:**
-- Se vocÍ executar 3 Receivers, ser„o criadas 3 filas anÙnimas
-- Cada fila receber· uma cÛpia da mensagem
-- Filas s„o independentes entre si
+**Cada Receiver tem sua pr√≥pria fila:**
+- Se voc√™ executar 3 Receivers, ser√£o criadas 3 filas an√¥nimas
+- Cada fila receber√° uma c√≥pia da mensagem
+- Filas s√£o independentes entre si
 
 #### Passo 3: Fazer Binding
 
@@ -216,8 +216,8 @@ sequenceDiagram
     API->>Exchange: BasicPublish(mensagem)
     
     Note over Exchange: Fanout: Copia para TODAS as filas
-    Exchange->>Q1: CÛpia da mensagem
-    Exchange->>Q2: CÛpia da mensagem
+    Exchange->>Q1: C√≥pia da mensagem
+    Exchange->>Q2: C√≥pia da mensagem
     
     API->>Client: 202 Accepted
     
@@ -230,7 +230,7 @@ sequenceDiagram
     R2->>R2: Exibe no console
 ```
 
-## DiferenÁa entre Fanout e Default Exchange
+## Diferen√ßa entre Fanout e Default Exchange
 
 ```mermaid
 graph TB
@@ -254,14 +254,14 @@ graph TB
     style FE fill:#ff6b6b
 ```
 
-### ComparaÁ„o
+### Compara√ß√£o
 
 | Aspecto | Default Exchange | Fanout Exchange |
 |---------|-----------------|-----------------|
-| **Routing Key** | ObrigatÛria (nome da fila) | Ignorada |
-| **Destinat·rios** | Uma ˙nica fila | Todas as filas vinculadas |
+| **Routing Key** | Obrigat√≥ria (nome da fila) | Ignorada |
+| **Destinat√°rios** | Uma √∫nica fila | Todas as filas vinculadas |
 | **Uso** | Point-to-point | Broadcast |
-| **Escalabilidade** | Load balancing entre consumers da mesma fila | CÛpia para cada consumer |
+| **Escalabilidade** | Load balancing entre consumers da mesma fila | C√≥pia para cada consumer |
 
 ## Componentes do Sistema
 
@@ -269,16 +269,16 @@ graph TB
 
 API REST desenvolvida em ASP.NET Core 8.0 que publica mensagens no Fanout Exchange.
 
-#### Endpoints DisponÌveis
+#### Endpoints Dispon√≠veis
 
 **GET /api/message**
-- Retorna todas as mensagens publicadas armazenadas em memÛria
+- Retorna todas as mensagens publicadas armazenadas em mem√≥ria
 - Resposta: Lista de mensagens
 
 **POST /api/message**
 - Publica uma nova mensagem no fanout_exchange
 - Body: JSON com estrutura da mensagem
-- Resposta: Status 202 (Accepted) com confirmaÁ„o
+- Resposta: Status 202 (Accepted) com confirma√ß√£o
 
 #### Modelo de Mensagem
 
@@ -292,9 +292,9 @@ API REST desenvolvida em ASP.NET Core 8.0 que publica mensagens no Fanout Exchan
 
 ### 2. RabbitMq.Receiver (Consumidor)
 
-AplicaÁ„o console que:
+Aplica√ß√£o console que:
 - Declara o fanout_exchange
-- Cria uma fila anÙnima exclusiva
+- Cria uma fila an√¥nima exclusiva
 - Vincula a fila ao exchange
 - Consome mensagens broadcast
 
@@ -303,30 +303,30 @@ AplicaÁ„o console que:
 - Conecta-se automaticamente ao RabbitMQ no localhost
 - Cria fila com nome gerado automaticamente (ex: `amq.gen-JzTY20BRgKO`)
 - Recebe **todas** as mensagens publicadas no fanout_exchange
-- Processa cada mensagem com delay de 5 segundos (simulaÁ„o)
-- Exibe a mensagem no console apÛs processamento
+- Processa cada mensagem com delay de 5 segundos (simula√ß√£o)
+- Exibe a mensagem no console ap√≥s processamento
 
-## ConfiguraÁ„o do Exchange e Filas
+## Configura√ß√£o do Exchange e Filas
 
 ### Fanout Exchange
 
 ```mermaid
 graph TD
     E[fanout_exchange] -->|type: Fanout| A[Tipo de Exchange]
-    E -->|durable: true default| B[Persistente apÛs restart]
-    E -->|auto-delete: false| C[N„o È deletado automaticamente]
+    E -->|durable: true default| B[Persistente ap√≥s restart]
+    E -->|auto-delete: false| C[N√£o √© deletado automaticamente]
     
     style E fill:#ff6b6b
 ```
 
-### Filas AnÙnimas
+### Filas An√¥nimas
 
 ```mermaid
 graph TD
-    Q[Fila AnÙnima] -->|name: amq.gen-*| A[Nome gerado automaticamente]
-    Q -->|exclusive: true| B[Exclusiva para esta conex„o]
-    Q -->|auto-delete: true| C[Deletada ao fechar conex„o]
-    Q -->|durable: false| D[N„o persiste apÛs restart]
+    Q[Fila An√¥nima] -->|name: amq.gen-*| A[Nome gerado automaticamente]
+    Q -->|exclusive: true| B[Exclusiva para esta conex√£o]
+    Q -->|auto-delete: true| C[Deletada ao fechar conex√£o]
+    Q -->|durable: false| D[N√£o persiste ap√≥s restart]
     
     style Q fill:#4ecdc4
 ```
@@ -336,14 +336,14 @@ graph TD
 | Propriedade | Valor | Significado |
 |-------------|-------|-------------|
 | **name** | `amq.gen-*` | Nome gerado automaticamente pelo RabbitMQ |
-| **durable** | false | Fila n„o sobrevive ao restart do RabbitMQ |
-| **exclusive** | true | Apenas esta conex„o pode acessar a fila |
-| **auto-delete** | true | Fila È deletada quando a conex„o fecha |
-| **autoAck** | true | Mensagens s„o automaticamente confirmadas |
+| **durable** | false | Fila n√£o sobrevive ao restart do RabbitMQ |
+| **exclusive** | true | Apenas esta conex√£o pode acessar a fila |
+| **auto-delete** | true | Fila √© deletada quando a conex√£o fecha |
+| **autoAck** | true | Mensagens s√£o automaticamente confirmadas |
 
 ## Casos de Uso do Fanout Exchange
 
-### 1. NotificaÁıes em Tempo Real
+### 1. Notifica√ß√µes em Tempo Real
 
 ```mermaid
 graph LR
@@ -354,9 +354,9 @@ graph LR
     FE --> Q4[Analytics]
 ```
 
-**Exemplo pr·tico:**
+**Exemplo pr√°tico:**
 - Sistema de e-commerce registra uma venda
-- NotificaÁ„o enviada para: Email, SMS, App Mobile, Dashboard Analytics
+- Notifica√ß√£o enviada para: Email, SMS, App Mobile, Dashboard Analytics
 
 ### 2. Cache Invalidation
 
@@ -368,11 +368,11 @@ graph LR
     FE --> C3[Cache Server N]
 ```
 
-**Exemplo pr·tico:**
+**Exemplo pr√°tico:**
 - Produto atualizado no banco de dados
 - Todos os servidores de cache invalidam o cache deste produto
 
-### 3. Logging DistribuÌdo
+### 3. Logging Distribu√≠do
 
 ```mermaid
 graph LR
@@ -383,13 +383,13 @@ graph LR
     FE --> L4[Monitoring System]
 ```
 
-**Exemplo pr·tico:**
-- AplicaÁ„o gera um log de erro crÌtico
-- Log È enviado para: arquivo local, banco de dados, cloud storage, sistema de monitoramento
+**Exemplo pr√°tico:**
+- Aplica√ß√£o gera um log de erro cr√≠tico
+- Log √© enviado para: arquivo local, banco de dados, cloud storage, sistema de monitoramento
 
-## Testando M˙ltiplos Consumers
+## Testando M√∫ltiplos Consumers
 
-Para ver o poder do Fanout Exchange, execute m˙ltiplos Receivers:
+Para ver o poder do Fanout Exchange, execute m√∫ltiplos Receivers:
 
 ### Terminal 1 - Publisher
 ```bash
@@ -424,34 +424,34 @@ curl -X POST "https://localhost:7xxx/api/message" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Broadcast Test",
-    "text": "Esta mensagem chegar· em TODOS os receivers",
+    "text": "Esta mensagem chegar√° em TODOS os receivers",
     "author": "System"
   }'
 ```
 
 ### Resultado Esperado
 
-**Todos os 3 receivers** exibir„o (apÛs 5 segundos):
+**Todos os 3 receivers** exibir√£o (ap√≥s 5 segundos):
 ```
-Mensagem Recebida {"Title":"Broadcast Test","Text":"Esta mensagem chegar· em TODOS os receivers","Author":"System"}
+Mensagem Recebida {"Title":"Broadcast Test","Text":"Esta mensagem chegar√° em TODOS os receivers","Author":"System"}
 ```
 
 ## Vantagens do Fanout Exchange
 
 ### 1. Simplicidade
-- N„o precisa configurar routing keys
-- LÛgica de roteamento transparente
-- F·cil adicionar ou remover consumers
+- N√£o precisa configurar routing keys
+- L√≥gica de roteamento transparente
+- F√°cil adicionar ou remover consumers
 
 ### 2. Desacoplamento Total
-- Publisher n„o conhece os consumers
-- Consumers n„o conhecem outros consumers
-- Adicionar novo consumer n„o requer mudanÁas no publisher
+- Publisher n√£o conhece os consumers
+- Consumers n√£o conhecem outros consumers
+- Adicionar novo consumer n√£o requer mudan√ßas no publisher
 
 ### 3. Escalabilidade Horizontal
 ```mermaid
 graph LR
-    P[Publisher<br/>1 inst‚ncia] -->|1 mensagem| FE[fanout_exchange]
+    P[Publisher<br/>1 inst√¢ncia] -->|1 mensagem| FE[fanout_exchange]
     FE -->|broadcast| C1[Consumer 1]
     FE -->|broadcast| C2[Consumer 2]
     FE -->|broadcast| C3[Consumer 3]
@@ -461,25 +461,25 @@ graph LR
 ```
 
 ### 4. Processamento Paralelo Independente
-- Cada consumer processa em seu prÛprio ritmo
-- Falha em um consumer n„o afeta os outros
+- Cada consumer processa em seu pr√≥prio ritmo
+- Falha em um consumer n√£o afeta os outros
 - Ideal para tarefas independentes (email, SMS, analytics)
 
-## Quando N√O Usar Fanout
+## Quando N√ÉO Usar Fanout
 
-? **N„o use Fanout quando:**
+? **N√£o use Fanout quando:**
 
 1. **Precisa de roteamento seletivo**
    - Use Direct ou Topic Exchange se precisar enviar mensagens apenas para alguns consumers
 
 2. **Load Balancing**
-   - Se quer distribuir mensagens entre workers (n„o copiar), use uma ˙nica fila com m˙ltiplos consumers
+   - Se quer distribuir mensagens entre workers (n√£o copiar), use uma √∫nica fila com m√∫ltiplos consumers
 
 3. **Volume muito alto**
-   - Se tem milhares de consumers, cada mensagem ser· copiada milhares de vezes
+   - Se tem milhares de consumers, cada mensagem ser√° copiada milhares de vezes
 
 4. **Processamento sequencial**
-   - Fanout È para processamento paralelo e independente
+   - Fanout √© para processamento paralelo e independente
 
 ## Monitoramento
 
@@ -493,11 +493,11 @@ Acesse http://localhost:15672 para visualizar:
 - Bindings: Todas as filas vinculadas
 
 #### Queues
-- Filas anÙnimas criadas: `amq.gen-xxxxx`
+- Filas an√¥nimas criadas: `amq.gen-xxxxx`
 - Consumers ativos por fila
 - Taxa de mensagens
 
-### Visualizando o Fanout em AÁ„o
+### Visualizando o Fanout em A√ß√£o
 
 ```mermaid
 graph TB
@@ -515,41 +515,41 @@ graph TB
 ## Tecnologias Utilizadas
 
 - **.NET 8.0**: Framework de desenvolvimento
-- **ASP.NET Core**: Para criaÁ„o da Web API
+- **ASP.NET Core**: Para cria√ß√£o da Web API
 - **RabbitMQ.Client 7.2.0**: Client library oficial do RabbitMQ
-- **Swagger/OpenAPI**: DocumentaÁ„o interativa da API
-- **System.Text.Json**: SerializaÁ„o/deserializaÁ„o de mensagens
+- **Swagger/OpenAPI**: Documenta√ß√£o interativa da API
+- **System.Text.Json**: Serializa√ß√£o/deserializa√ß√£o de mensagens
 
-## PrÈ-requisitos
+## Pr√©-requisitos
 
-### InstalaÁ„o do RabbitMQ
+### Instala√ß√£o do RabbitMQ
 
 1. **Docker (Recomendado)**
    ```bash
    docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
    ```
 
-2. **InstalaÁ„o Local**
+2. **Instala√ß√£o Local**
    - Download: https://www.rabbitmq.com/download.html
-   - Porta padr„o: 5672
+   - Porta padr√£o: 5672
    - Interface de gerenciamento: http://localhost:15672
-   - Credenciais padr„o: guest/guest
+   - Credenciais padr√£o: guest/guest
 
 ### Requisitos de Desenvolvimento
 
 - .NET 8.0 SDK ou superior
-- IDE compatÌvel (Visual Studio 2022, VS Code, Rider)
+- IDE compat√≠vel (Visual Studio 2022, VS Code, Rider)
 - RabbitMQ Server rodando em localhost
 
-## SoluÁ„o de Problemas
+## Solu√ß√£o de Problemas
 
-### Mensagens n„o chegam aos consumers
+### Mensagens n√£o chegam aos consumers
 
-**Causa possÌvel:**
-- Exchange n„o foi declarado antes do binding
-- Fila n„o est· vinculada ao exchange
+**Causa poss√≠vel:**
+- Exchange n√£o foi declarado antes do binding
+- Fila n√£o est√° vinculada ao exchange
 
-**SoluÁ„o:**
+**Solu√ß√£o:**
 ```csharp
 // 1. Declare o exchange primeiro
 await channel.ExchangeDeclareAsync("fanout_exchange", ExchangeType.Fanout);
@@ -557,59 +557,59 @@ await channel.ExchangeDeclareAsync("fanout_exchange", ExchangeType.Fanout);
 // 2. Crie a fila
 var queueResult = await channel.QueueDeclareAsync();
 
-// 3. FaÁa o binding
+// 3. Fa√ßa o binding
 await channel.QueueBindAsync(queueResult.QueueName, "fanout_exchange", string.Empty);
 ```
 
-### Filas anÙnimas n„o s„o deletadas
+### Filas an√¥nimas n√£o s√£o deletadas
 
 **Causa:**
-- Conex„o n„o foi fechada corretamente
-- Fila n„o foi declarada como exclusive
+- Conex√£o n√£o foi fechada corretamente
+- Fila n√£o foi declarada como exclusive
 
-**SoluÁ„o:**
-- Sempre use `using` statements para conexıes e canais
-- As filas anÙnimas criadas com `QueueDeclareAsync()` sem par‚metros j· s„o exclusive por padr„o
+**Solu√ß√£o:**
+- Sempre use `using` statements para conex√µes e canais
+- As filas an√¥nimas criadas com `QueueDeclareAsync()` sem par√¢metros j√° s√£o exclusive por padr√£o
 
-### Receiver n„o recebe mensagens antigas
+### Receiver n√£o recebe mensagens antigas
 
 **Comportamento esperado:**
-- Filas anÙnimas n„o s„o dur·veis
-- Mensagens enviadas antes do Receiver iniciar s„o perdidas
-- Fanout È para comunicaÁ„o em tempo real
+- Filas an√¥nimas n√£o s√£o dur√°veis
+- Mensagens enviadas antes do Receiver iniciar s√£o perdidas
+- Fanout √© para comunica√ß√£o em tempo real
 
-## ReferÍncias
+## Refer√™ncias
 
-- [DocumentaÁ„o Oficial RabbitMQ](https://www.rabbitmq.com/documentation.html)
+- [Documenta√ß√£o Oficial RabbitMQ](https://www.rabbitmq.com/documentation.html)
 - [RabbitMQ .NET Client Guide](https://www.rabbitmq.com/dotnet-api-guide.html)
 - [Fanout Exchange Tutorial](https://www.rabbitmq.com/tutorials/tutorial-three-dotnet.html)
 - [AMQP Protocol](https://www.amqp.org/)
 
-## Gloss·rio
+## Gloss√°rio
 
-| Termo | DefiniÁ„o |
+| Termo | Defini√ß√£o |
 |-------|-----------|
 | **Fanout Exchange** | Exchange que faz broadcast de mensagens para todas as filas vinculadas |
-| **Broadcast** | Enviar uma cÛpia da mensagem para m˙ltiplos destinat·rios |
+| **Broadcast** | Enviar uma c√≥pia da mensagem para m√∫ltiplos destinat√°rios |
 | **Anonymous Queue** | Fila com nome gerado automaticamente pelo RabbitMQ |
-| **Binding** | VÌnculo entre exchange e fila que define o roteamento |
-| **Exclusive Queue** | Fila que sÛ pode ser acessada pela conex„o que a criou |
+| **Binding** | V√≠nculo entre exchange e fila que define o roteamento |
+| **Exclusive Queue** | Fila que s√≥ pode ser acessada pela conex√£o que a criou |
 | **Auto-delete** | Propriedade que faz a fila ser deletada automaticamente |
 
-## ComparaÁ„o com Outras Branches
+## Compara√ß√£o com Outras Branches
 
 | Feature | main | exchange/direct | exchange/fanout | exchange/topic |
 |---------|------|-----------------|-----------------|----------------|
 | **Exchange Type** | Default | Direct | Fanout | Topic |
-| **Routing Key** | Nome da fila | ObrigatÛria | Ignorada | Pattern matching |
-| **Destinat·rios** | 1 fila | 1 ou mais filas (por key) | Todas as filas | Filas com pattern match |
-| **Uso principal** | B·sico | Point-to-point | Broadcast | Roteamento flexÌvel |
-| **Status** | ?? N„o funcional | ? Funcional | ? Funcional | ? Funcional |
+| **Routing Key** | Nome da fila | Obrigat√≥ria | Ignorada | Pattern matching |
+| **Destinat√°rios** | 1 fila | 1 ou mais filas (por key) | Todas as filas | Filas com pattern match |
+| **Uso principal** | B√°sico | Point-to-point | Broadcast | Roteamento flex√≠vel |
+| **Status** | ?? N√£o funcional | ? Funcional | ? Funcional | ? Funcional |
 
-## LicenÁa
+## Licen√ßa
 
-Este projeto È um exemplo educacional para demonstraÁ„o de conceitos de mensageria com RabbitMQ.
+Este projeto √© um exemplo educacional para demonstra√ß√£o de conceitos de mensageria com RabbitMQ.
 
 ---
 
-**Desenvolvido para fins de aprendizado e demonstraÁ„o de conceitos de arquitetura distribuÌda.**
+**Desenvolvido para fins de aprendizado e demonstra√ß√£o de conceitos de arquitetura distribu√≠da.**
