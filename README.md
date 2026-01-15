@@ -1,7 +1,7 @@
 ﻿# Sistema de Mensageria com RabbitMQ
 
 <div align="center">
-  <img src="https://tse2.mm.bing.net/th/id/OIP.aPjaXTW-UhW7VJblvXNfegHaFg?rs=1&pid=ImgDetMain" alt="RabbitMQ Learning" width="600"/>
+<img alt="Mailman Sponge Bob" width="500" style="max-width: 100%;" src="https://media1.tenor.com/m/YUtTGfa4wQkAAAAC/annoyed-akward.gif">
 </div>
 
 ## Visão Geral
@@ -93,6 +93,13 @@ graph LR
     C -->|Armazena| D[message_queue]
     D -->|Consome| E[Receiver Console App]
     E -->|Processa| F[Console Output]
+    
+    style A fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    style B fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    style C fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    style D fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+    style E fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    style F fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#000
 ```
 
 ## Estrutura do Projeto
@@ -300,6 +307,12 @@ graph TD
     A -->|exclusive: false| C[Múltiplos consumidores permitidos]
     A -->|autoDelete: false| D[Fila não é deletada automaticamente]
     A -->|autoAck: true| E[Confirmação automática de mensagens]
+    
+    style A fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000,font-weight:bold
+    style B fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+    style C fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    style D fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    style E fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#000
 ```
 
 ### Propriedades da Fila
@@ -322,8 +335,11 @@ graph TB
     Q -.->|Pode ter| S2[Receiver 2]
     Q -.->|Pode ter| S3[Receiver N]
     
-    style S2 stroke-dasharray: 5 5
-    style S3 stroke-dasharray: 5 5
+    style P fill:#e8f5e9,stroke:#388e3c,stroke-width:3px,color:#000,font-weight:bold
+    style Q fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000,font-weight:bold
+    style S1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    style S2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000,stroke-dasharray: 5 5
+    style S3 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000,stroke-dasharray: 5 5
 ```
 
 Neste padrão:
@@ -377,12 +393,12 @@ graph TB
     A --> E[Mensagens Não Confirmadas<br/>Msgs entregues aguardando ACK]
     A --> F[Mensagens Prontas<br/>Msgs aguardando consumo]
     
-    style A fill:#ff6b6b
-    style B fill:#4ecdc4
-    style C fill:#45b7d1
-    style D fill:#96ceb4
-    style E fill:#ffeaa7
-    style F fill:#dfe6e9
+    style A fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000,font-weight:bold
+    style B fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    style C fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000
+    style D fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    style E fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    style F fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
 ```
 
 #### Entendendo as Métricas
